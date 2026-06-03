@@ -560,8 +560,8 @@ export default function AdminDashboard({
           <h2 className="font-serif text-lg text-espresso">Replace resume</h2>
           <p className="mt-2 text-sm leading-relaxed text-mocha">
             Upload a PDF to replace the resume shown on the public site. In
-            production this is saved to Upstash, so Netlify needs the Upstash
-            REST URL and token set.
+            production this is saved to Netlify Blobs, with Upstash as an
+            optional fallback for non-Netlify deployments.
           </p>
 
           <div className="mt-5 space-y-3">

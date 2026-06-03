@@ -36,9 +36,11 @@ SESSION_SECRET=at-least-32-random-characters-long
 
 ### Deployed dashboard storage
 
-Local file storage does not persist on Netlify or Vercel. Add free
-[Upstash Redis](https://upstash.com) and set these environment variables in
-your deployment settings:
+Local file storage does not persist in production. On Netlify, dashboard edits
+and resume uploads are saved with Netlify Blobs automatically.
+
+For non-Netlify deployments, add free [Upstash Redis](https://upstash.com) and
+set these environment variables:
 
 ```
 UPSTASH_REDIS_REST_URL=
@@ -50,7 +52,7 @@ deployment settings.
 
 ## Editing content (code)
 
-Default seed data lives in `src/data/`. The site reads from `content/portfolio.json` (local) or Upstash (production) when the dashboard saves.
+Default seed data lives in `src/data/`. The site reads from `content/portfolio.json` locally, Netlify Blobs on Netlify, or Upstash when those variables are configured.
 
 | File | What to edit |
 |---|---|
@@ -62,7 +64,7 @@ Default seed data lives in `src/data/`. The site reads from `content/portfolio.j
 
 Replace `public/resume.pdf` locally, or sign in to the content dashboard and
 use the Resume tab to upload a replacement PDF. Production uploads are stored
-in Upstash and served from `/api/resume`.
+in Netlify Blobs or Upstash and served from `/api/resume`.
 
 ## Deploy
 

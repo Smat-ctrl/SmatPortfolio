@@ -1,3 +1,4 @@
+import { getStore } from "@netlify/blobs";
 import { experiences as defaultExperience } from "@/data/experience";
 import { projects as defaultProjects } from "@/data/projects";
 import type { Experience, Project } from "@/types";
@@ -6,9 +7,11 @@ import path from "path";
 
 const STORE_KEY = "portfolio:data";
 const RESUME_KEY = "portfolio:resume";
+const BLOB_STORE = "portfolio-admin";
 const LOCAL_PATH = path.join(process.cwd(), "content", "portfolio.json");
 const LOCAL_RESUME_PATH = path.join(process.cwd(), "public", "resume.pdf");
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
+const IS_NETLIFY = Boolean(process.env.NETLIFY);
 
 export interface PortfolioData {
   projects: Project[];
@@ -37,6 +40,24 @@ function getSeedData(): PortfolioData {
     projects: defaultProjects,
     experience: defaultExperience,
   };
+}
+
+function getNetlifyStore() {
+  if (!IS_NETLIFY) return null;
+  return getStore(BLOB_STORE);
+}
+
+async function getBlobValue(key: string): Promise<string | null> {
+  const store = getNetlifyStore();
+  if (!store) return null;
+  return store.get(key, { type: "text", consistency: "strong" });
+}
+
+async function setBlobValue(key: string, value: string): Promise<boolean> {
+  const store = getNetlifyStore();
+  if (!store) return false;
+  await store.set(key, value);
+  return true;
 }
 
 async function getUpstashValue(key: string): Promise<string | null> {
@@ -92,6 +113,16 @@ async function writeToUpstash(data: PortfolioData): Promise<boolean> {
   return setUpstashValue(STORE_KEY, JSON.stringify(data));
 }
 
+async function readFromBlobStore(): Promise<PortfolioData | null> {
+  const value = await getBlobValue(STORE_KEY);
+  if (!value) return null;
+  return JSON.parse(value) as PortfolioData;
+}
+
+async function writeToBlobStore(data: PortfolioData): Promise<boolean> {
+  return setBlobValue(STORE_KEY, JSON.stringify(data));
+}
+
 async function readFromFile(): Promise<PortfolioData | null> {
   try {
     const raw = await fs.readFile(LOCAL_PATH, "utf-8");
@@ -107,6 +138,12 @@ async function writeToFile(data: PortfolioData): Promise<void> {
 }
 
 export async function getPortfolioData(): Promise<PortfolioData> {
+  const blob = await readFromBlobStore().catch((error) => {
+    console.error("Could not read portfolio data from Netlify Blobs:", error);
+    return null;
+  });
+  if (blob) return blob;
+
   const upstash = await readFromUpstash().catch((error) => {
     console.error("Could not read portfolio data from Upstash:", error);
     return null;
@@ -120,12 +157,15 @@ export async function getPortfolioData(): Promise<PortfolioData> {
 }
 
 export async function savePortfolioData(data: PortfolioData): Promise<void> {
+  const blobOk = await writeToBlobStore(data);
+  if (blobOk) return;
+
   const upstashOk = await writeToUpstash(data);
   if (upstashOk) return;
 
   if (IS_PRODUCTION) {
     throw new Error(
-      "Production edits require UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in Netlify environment variables.",
+      "Production edits require Netlify Blobs or UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.",
     );
   }
 
@@ -159,6 +199,12 @@ export async function saveExperience(experience: Experience[]): Promise<void> {
 }
 
 export async function getResumeFile(): Promise<ResumeFile> {
+  const blobValue = await getBlobValue(RESUME_KEY).catch((error) => {
+    console.error("Could not read resume from Netlify Blobs:", error);
+    return null;
+  });
+  if (blobValue) return JSON.parse(blobValue) as ResumeFile;
+
   const upstashValue = await getUpstashValue(RESUME_KEY).catch((error) => {
     console.error("Could not read resume from Upstash:", error);
     return null;
@@ -175,12 +221,15 @@ export async function getResumeFile(): Promise<ResumeFile> {
 }
 
 export async function saveResumeFile(file: ResumeFile): Promise<void> {
+  const blobOk = await setBlobValue(RESUME_KEY, JSON.stringify(file));
+  if (blobOk) return;
+
   const upstashOk = await setUpstashValue(RESUME_KEY, JSON.stringify(file));
   if (upstashOk) return;
 
   if (IS_PRODUCTION) {
     throw new Error(
-      "Production resume uploads require UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in Netlify environment variables.",
+      "Production resume uploads require Netlify Blobs or UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.",
     );
   }
 
