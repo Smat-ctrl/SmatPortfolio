@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #f7f2ea;
+  --color-cream-dark: #ede4d8;
+  --color-steamed: #fffcf8;
+  --color-espresso: #3d2b1f;
+  --color-mocha: #6b5b52;
+  --color-caramel: #a67c52;
+  --color-caramel-deep: #8b6344;
+  --color-toasted: #c4a882;
+  --color-beige: #e8dfd3;
+  --color-foam: #faf6f0;
+
+  --font-serif: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  --shadow-warm: 0 4px 24px rgba(61, 43, 31, 0.08);
+  --shadow-warm-lg: 0 8px 32px rgba(61, 43, 31, 0.1);
+  --shadow-warm-hover: 0 12px 40px rgba(61, 43, 31, 0.12);
+}
+
+:root {
+  --background: #f7f2ea;
+  --foreground: #3d2b1f;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: #e8dfd3;
+  color: #3d2b1f;
+}
+
+:focus-visible {
+  outline: 2px solid #a67c52;
+  outline-offset: 2px;
+}
+
+.profile-media-image {
+  transform: scale(1.12);
+  animation: profile-media-drift 14s ease-in-out infinite;
+}
+
+.profile-media--coffee::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 100%,
+    rgba(255, 252, 248, 0.35) 0%,
+    transparent 55%
+  );
+  animation: profile-shimmer 5s ease-in-out infinite;
+}
+
+.profile-steam::before,
+.profile-steam::after {
+  content: "";
+  position: absolute;
+  bottom: 18%;
+  width: 28%;
+  height: 45%;
+  background: linear-gradient(
+    to top,
+    rgba(255, 252, 248, 0.5),
+    transparent
+  );
+  border-radius: 50%;
+  filter: blur(6px);
+  animation: profile-steam-rise 4s ease-in-out infinite;
+}
+
+.profile-steam::before {
+  left: 28%;
+}
+
+.profile-steam::after {
+  right: 28%;
+  animation-delay: 1.6s;
+}
+
+@keyframes profile-media-drift {
+  0%,
+  100% {
+    transform: scale(1.12) translate(0, 0);
+  }
+  50% {
+    transform: scale(1.18) translate(-3%, -2%);
+  }
+}
+
+@keyframes profile-shimmer {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+@keyframes profile-steam-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.85);
+  }
+  40% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-18px) scale(1.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-media-image,
+  .profile-media--coffee::after,
+  .profile-steam::before,
+  .profile-steam::after {
+    animation: none;
+  }
+
+  .profile-media-image {
+    transform: scale(1);
+  }
+}
