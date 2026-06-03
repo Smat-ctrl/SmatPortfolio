@@ -7,7 +7,7 @@ A personal portfolio website built with Next.js, TypeScript, Tailwind CSS, and M
 ```bash
 npm install
 cp .env.example .env.local   # required — Next.js ignores .env.example
-# Edit .env.local with your ADMIN_* and SESSION_SECRET values
+# Edit .env.local with your dashboard credentials and SESSION_SECRET values
 npm run dev
 ```
 
@@ -17,16 +17,16 @@ Restart the dev server after creating or changing `.env.local`.
 
 Open http://localhost:3000
 
-## Admin dashboard (no coding required)
+## Content dashboard (no coding required)
 
-Manage projects and work experience at **http://localhost:3000/admin/login**
+Manage projects and work experience at the local dashboard login route.
 
 1. Copy `.env.example` to `.env.local`
 2. Set your credentials:
 
 ```
 ADMIN_KEYWORD=your-secret-keyword
-ADMIN_USERNAME=admin
+ADMIN_USERNAME=site-owner
 ADMIN_PASSWORD=your-password
 SESSION_SECRET=at-least-32-random-characters-long
 ```
@@ -43,11 +43,11 @@ UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 ```
 
-Also set all `ADMIN_*` and `SESSION_SECRET` variables in Vercel project settings.
+Also set the dashboard credential variables and `SESSION_SECRET` in your deployment settings.
 
 ## Editing content (code)
 
-Default seed data lives in `src/data/`. The site reads from `content/portfolio.json` (local) or Upstash (production) when admin saves.
+Default seed data lives in `src/data/`. The site reads from `content/portfolio.json` (local) or Upstash (production) when the dashboard saves.
 
 | File | What to edit |
 |---|---|
@@ -65,7 +65,7 @@ Replace `public/resume.pdf` with your real resume. It previews in the hero and o
 npm run build
 ```
 
-Deploy to [Vercel](https://vercel.com). Set environment variables for admin if you want the dashboard in production.
+Deploy to Netlify or Vercel. Set environment variables if you want the dashboard in production.
 
 ## Troubleshooting
 
