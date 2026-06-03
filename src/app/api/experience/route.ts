@@ -1,3 +1,4 @@
+import { isAuthenticated } from "@/lib/auth";
 import { getExperience, saveExperience } from "@/lib/store";
 import type { Experience } from "@/types";
 import { NextResponse } from "next/server";
@@ -8,6 +9,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const entry = (await request.json()) as Experience;
     if (!entry.id || !entry.company) {

@@ -1,3 +1,4 @@
+import { isAuthenticated } from "@/lib/auth";
 import { getProjects, saveProjects } from "@/lib/store";
 import type { Project } from "@/types";
 import { NextResponse } from "next/server";
@@ -6,6 +7,10 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { id } = await params;
     const project = (await request.json()) as Project;
@@ -29,6 +34,10 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { id } = await params;
     const projects = await getProjects();
