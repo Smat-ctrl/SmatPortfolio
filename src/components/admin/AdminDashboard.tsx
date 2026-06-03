@@ -5,7 +5,7 @@ import type { Experience, Project } from "@/types";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-type Tab = "projects" | "experience";
+type Tab = "projects" | "experience" | "resume";
 
 interface AdminDashboardProps {
   initialProjects: Project[];
@@ -51,6 +51,8 @@ export default function AdminDashboard({
   const [error, setError] = useState("");
   const [projectForm, setProjectForm] = useState<Project>(emptyProject());
   const [expForm, setExpForm] = useState<Experience>(emptyExperience());
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [isUploadingResume, setIsUploadingResume] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editingExpId, setEditingExpId] = useState<string | null>(null);
 
@@ -178,6 +180,37 @@ export default function AdminDashboard({
     setTab("experience");
   }
 
+  async function uploadResume(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setMessage("");
+
+    if (!resumeFile) {
+      setError("Choose a PDF resume first.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("resume", resumeFile);
+
+    setIsUploadingResume(true);
+    const res = await fetch("/api/resume/upload", {
+      method: "POST",
+      body: formData,
+    });
+    setIsUploadingResume(false);
+
+    if (!res.ok) {
+      const data = (await res.json()) as { error?: string };
+      setError(data.error ?? "Failed to upload resume.");
+      return;
+    }
+
+    setResumeFile(null);
+    setMessage("Resume uploaded.");
+    router.refresh();
+  }
+
   const inputClass =
     "w-full rounded-xl border border-beige bg-foam px-3 py-2 text-sm text-espresso outline-none focus:border-caramel";
 
@@ -212,7 +245,7 @@ export default function AdminDashboard({
       )}
 
       <div className="mb-6 flex gap-2">
-        {(["projects", "experience"] as Tab[]).map((t) => (
+        {(["projects", "experience", "resume"] as Tab[]).map((t) => (
           <button
             key={t}
             type="button"
@@ -517,6 +550,47 @@ export default function AdminDashboard({
             ))}
           </ul>
         </div>
+      )}
+
+      {tab === "resume" && (
+        <form
+          onSubmit={uploadResume}
+          className="max-w-xl rounded-2xl border border-beige bg-steamed p-6 shadow-warm"
+        >
+          <h2 className="font-serif text-lg text-espresso">Replace resume</h2>
+          <p className="mt-2 text-sm leading-relaxed text-mocha">
+            Upload a PDF to replace the resume shown on the public site. In
+            production this is saved to Upstash, so Netlify needs the Upstash
+            REST URL and token set.
+          </p>
+
+          <div className="mt-5 space-y-3">
+            <input
+              className={inputClass}
+              type="file"
+              accept="application/pdf,.pdf"
+              onChange={(e) => setResumeFile(e.target.files?.[0] ?? null)}
+            />
+            {resumeFile && (
+              <p className="text-xs text-mocha">
+                Selected: {resumeFile.name}
+              </p>
+            )}
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-2">
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isUploadingResume}
+            >
+              {isUploadingResume ? "Uploading..." : "Upload resume"}
+            </Button>
+            <Button href="/api/resume" variant="secondary" external>
+              Open current resume
+            </Button>
+          </div>
+        </form>
       )}
     </div>
   );

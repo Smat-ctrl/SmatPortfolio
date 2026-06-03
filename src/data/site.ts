@@ -7,7 +7,7 @@ export const siteConfig: SiteConfig = {
     "I build full-stack apps, useful tools, and software that solves real problems.",
   supportingLine:
     "Currently learning by building, debugging, and shipping projects that make me better.",
-  resumeUrl: "/resume.pdf",
+  resumeUrl: "/api/resume",
   navLinks: [
     { label: "About", href: "#about" },
     { label: "Experience", href: "#experience" },

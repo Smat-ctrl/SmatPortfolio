@@ -34,16 +34,19 @@ SESSION_SECRET=at-least-32-random-characters-long
 3. Sign in with keyword + username + password
 4. Add, edit, or delete projects and experience — changes appear on the site immediately
 
-### Deployed admin (Vercel)
+### Deployed dashboard storage
 
-Local file storage does not persist on Vercel. Add free [Upstash Redis](https://upstash.com) and set in Vercel env:
+Local file storage does not persist on Netlify or Vercel. Add free
+[Upstash Redis](https://upstash.com) and set these environment variables in
+your deployment settings:
 
 ```
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 ```
 
-Also set the dashboard credential variables and `SESSION_SECRET` in your deployment settings.
+Also set the dashboard credential variables and `SESSION_SECRET` in your
+deployment settings.
 
 ## Editing content (code)
 
@@ -57,7 +60,9 @@ Default seed data lives in `src/data/`. The site reads from `content/portfolio.j
 
 ## Resume
 
-Replace `public/resume.pdf` with your real resume. It previews in the hero and opens from the navbar.
+Replace `public/resume.pdf` locally, or sign in to the content dashboard and
+use the Resume tab to upload a replacement PDF. Production uploads are stored
+in Upstash and served from `/api/resume`.
 
 ## Deploy
 
