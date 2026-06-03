@@ -73,9 +73,7 @@ export async function getPortfolioData(): Promise<PortfolioData> {
   const file = await readFromFile();
   if (file) return file;
 
-  const seed = getSeedData();
-  await savePortfolioData(seed);
-  return seed;
+  return getSeedData();
 }
 
 export async function savePortfolioData(data: PortfolioData): Promise<void> {
@@ -86,7 +84,7 @@ export async function savePortfolioData(data: PortfolioData): Promise<void> {
     await writeToFile(data);
   } catch {
     throw new Error(
-      "Could not save data. For Vercel, set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.",
+      "Could not save data. In production, set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.",
     );
   }
 }
