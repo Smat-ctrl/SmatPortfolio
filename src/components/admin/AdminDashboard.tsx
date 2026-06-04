@@ -150,9 +150,24 @@ export default function AdminDashboard({
 
   async function deleteProject(id: string) {
     if (!confirm("Delete this project?")) return;
-    const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
+    setError("");
+    setMessage("");
+
+    const res = await fetch(`/api/projects/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      const data = (await res.json()) as { error?: string };
+      setError(data.error ?? "Failed to delete project.");
+      return;
+    }
+
     if (res.ok) {
       setProjects((prev) => prev.filter((p) => p.id !== id));
+      if (editingProjectId === id) {
+        setProjectForm(emptyProject());
+        setEditingProjectId(null);
+      }
       setMessage("Project deleted.");
       router.refresh();
     }
@@ -160,9 +175,24 @@ export default function AdminDashboard({
 
   async function deleteExperience(id: string) {
     if (!confirm("Delete this experience entry?")) return;
-    const res = await fetch(`/api/experience/${id}`, { method: "DELETE" });
+    setError("");
+    setMessage("");
+
+    const res = await fetch(`/api/experience/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      const data = (await res.json()) as { error?: string };
+      setError(data.error ?? "Failed to delete experience.");
+      return;
+    }
+
     if (res.ok) {
       setExperience((prev) => prev.filter((e) => e.id !== id));
+      if (editingExpId === id) {
+        setExpForm(emptyExperience());
+        setEditingExpId(null);
+      }
       setMessage("Experience deleted.");
       router.refresh();
     }

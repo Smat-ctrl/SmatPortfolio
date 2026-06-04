@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
-const SUDO_SEQUENCE = "portfolio";
+const SUDO_SEQUENCE = "sudo";
 const BUFFER_LIMIT = 12;
 
 export default function SudoListener() {

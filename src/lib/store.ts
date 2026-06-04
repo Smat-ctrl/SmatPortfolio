@@ -156,6 +156,19 @@ export async function getPortfolioData(): Promise<PortfolioData> {
   return getSeedData();
 }
 
+async function getPortfolioDataForWrite(): Promise<PortfolioData> {
+  const blob = await readFromBlobStore();
+  if (blob) return blob;
+
+  const upstash = await readFromUpstash();
+  if (upstash) return upstash;
+
+  const file = await readFromFile();
+  if (file) return file;
+
+  return getSeedData();
+}
+
 export async function savePortfolioData(data: PortfolioData): Promise<void> {
   const blobOk = await writeToBlobStore(data);
   if (blobOk) return;
@@ -189,12 +202,12 @@ export async function getExperience(): Promise<Experience[]> {
 }
 
 export async function saveProjects(projects: Project[]): Promise<void> {
-  const data = await getPortfolioData();
+  const data = await getPortfolioDataForWrite();
   await savePortfolioData({ ...data, projects });
 }
 
 export async function saveExperience(experience: Experience[]): Promise<void> {
-  const data = await getPortfolioData();
+  const data = await getPortfolioDataForWrite();
   await savePortfolioData({ ...data, experience });
 }
 
