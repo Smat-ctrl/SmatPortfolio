@@ -11,7 +11,6 @@ const BLOB_STORE = "portfolio-admin";
 const LOCAL_PATH = path.join(process.cwd(), "content", "portfolio.json");
 const LOCAL_RESUME_PATH = path.join(process.cwd(), "public", "resume.pdf");
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
-const IS_NETLIFY = Boolean(process.env.NETLIFY);
 
 export interface PortfolioData {
   projects: Project[];
@@ -42,8 +41,16 @@ function getSeedData(): PortfolioData {
   };
 }
 
+function hasNetlifyBlobsContext() {
+  return Boolean(
+    process.env.NETLIFY ||
+      process.env.NETLIFY_BLOBS_CONTEXT ||
+      globalThis.netlifyBlobsContext,
+  );
+}
+
 function getNetlifyStore() {
-  if (!IS_NETLIFY) return null;
+  if (!IS_PRODUCTION && !hasNetlifyBlobsContext()) return null;
   return getStore(BLOB_STORE);
 }
 
@@ -170,13 +177,25 @@ async function getPortfolioDataForWrite(): Promise<PortfolioData> {
 }
 
 export async function savePortfolioData(data: PortfolioData): Promise<void> {
-  const blobOk = await writeToBlobStore(data);
+  let blobError: unknown;
+  const blobOk = await writeToBlobStore(data).catch((error) => {
+    blobError = error;
+    return false;
+  });
   if (blobOk) return;
 
   const upstashOk = await writeToUpstash(data);
   if (upstashOk) return;
 
   if (IS_PRODUCTION) {
+    if (blobError) {
+      throw new Error(
+        `Netlify Blobs write failed. Check that Blobs is enabled for this Netlify site. ${
+          blobError instanceof Error ? blobError.message : String(blobError)
+        }`,
+      );
+    }
+
     throw new Error(
       "Production edits require Netlify Blobs or UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.",
     );
@@ -234,13 +253,27 @@ export async function getResumeFile(): Promise<ResumeFile> {
 }
 
 export async function saveResumeFile(file: ResumeFile): Promise<void> {
-  const blobOk = await setBlobValue(RESUME_KEY, JSON.stringify(file));
+  let blobError: unknown;
+  const blobOk = await setBlobValue(RESUME_KEY, JSON.stringify(file)).catch(
+    (error) => {
+      blobError = error;
+      return false;
+    },
+  );
   if (blobOk) return;
 
   const upstashOk = await setUpstashValue(RESUME_KEY, JSON.stringify(file));
   if (upstashOk) return;
 
   if (IS_PRODUCTION) {
+    if (blobError) {
+      throw new Error(
+        `Netlify Blobs write failed. Check that Blobs is enabled for this Netlify site. ${
+          blobError instanceof Error ? blobError.message : String(blobError)
+        }`,
+      );
+    }
+
     throw new Error(
       "Production resume uploads require Netlify Blobs or UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.",
     );
